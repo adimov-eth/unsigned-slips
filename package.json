@@ -1,0 +1,20 @@
+{
+  "name": "pdf-verifier",
+  "version": "1.0.0",
+  "description": "PDF authenticity verification system for bank documents",
+  "module": "src/index.ts",
+  "scripts": {
+    "extract": "bun run src/cli/extract.ts",
+    "compare": "bun run src/cli/compare.ts",
+    "baseline": "bun run src/cli/baseline.ts",
+    "verify": "bun run src/cli/verify.ts",
+    "test": "bun test"
+  },
+  "keywords": ["pdf", "verification", "forensics"],
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "private": true
+}

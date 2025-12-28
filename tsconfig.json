@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "module": "nodenext",
+    "target": "esnext",
+    "types": ["bun-types"],
+    "lib": ["esnext"],
+    "sourceMap": true,
+    "declaration": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "nodenext"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
