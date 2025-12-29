@@ -49,7 +49,7 @@ async function main() {
   const file1 = resolve(args[0]!);
   const file2 = resolve(args[1]!);
 
-  console.log(`\n🔍 Comparing:`);
+  console.log(`\nComparing:`);
   console.log(`   File 1: ${file1}`);
   console.log(`   File 2: ${file2}\n`);
 
@@ -70,7 +70,7 @@ async function main() {
     // Print variations
     console.log('\n=== VARIATIONS (Different between files) ===\n');
     for (const v of result.variations) {
-      const icon = v.significance === 'high' ? '🔴' : v.significance === 'medium' ? '🟡' : '🟢';
+      const icon = v.significance === 'high' ? '[high]' : v.significance === 'medium' ? '[med]' : '[low]';
       console.log(`${icon} [${v.category}] ${v.field} (${v.significance})`);
       console.log(`  File 1: ${v.value1}`);
       console.log(`  File 2: ${v.value2}`);
@@ -84,7 +84,7 @@ async function main() {
     console.log(`Risk indicators: ${result.variations.filter(v => v.significance === 'high').length} high, ${result.variations.filter(v => v.significance === 'medium').length} medium`);
 
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('Error:', error);
     process.exit(1);
   }
 }

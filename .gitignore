@@ -1,19 +1,22 @@
 node_modules
-out
 dist
+out
 *.tgz
-coverage
-*.lcov
-logs
-.env
-.env.*
-.eslintcache
-.cache
-*.tsbuildinfo
-.idea
-.DS_Store
 
 # real slips and their extracts — not for git
 data/artifacts/
 *.pdf
+
 .cursor/
+
+.env
+.env.*
+
+coverage
+*.lcov
+*.tsbuildinfo
+.eslintcache
+.cache
+
+.idea
+.DS_Store

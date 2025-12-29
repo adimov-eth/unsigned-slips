@@ -1,8 +1,7 @@
 /**
  * PDF Binary Parser
  *
- * Low-level PDF structure parser that extracts raw structure
- * without interpretation. Military-grade precision.
+ * Low-level PDF structure parser. Extracts raw structure, not rendered content.
  */
 
 import type {

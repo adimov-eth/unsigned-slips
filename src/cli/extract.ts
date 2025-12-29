@@ -27,15 +27,15 @@ async function main() {
   const pdfPath = resolve(args[0]!);
   const outputDir = args[1] ? resolve(args[1]) : './artifacts';
 
-  console.log(`\n📄 Analyzing: ${pdfPath}`);
-  console.log(`📁 Output: ${outputDir}\n`);
+  console.log(`\nAnalyzing: ${pdfPath}`);
+  console.log(`Output: ${outputDir}\n`);
 
   try {
     // Generate artifacts
-    console.log('⏳ Parsing PDF structure...');
+    console.log('Parsing PDF structure...');
     const artifacts = await ArtifactGenerator.generate(pdfPath);
 
-    console.log('✅ Extraction complete!\n');
+    console.log('Extraction complete.\n');
 
     // Print summary
     console.log('=== SUMMARY ===\n');
@@ -85,7 +85,7 @@ async function main() {
     console.log('');
 
     if (artifacts.streamText.length > 0) {
-      console.log('--- Decoded Text ---');
+      console.log('--- Stream text ---');
       for (const text of artifacts.streamText.slice(0, 20)) {
         console.log(`  "${text}"`);
       }
@@ -102,10 +102,10 @@ async function main() {
     const outputPath = `${outputDir}/${outputName}.json`;
 
     await ArtifactGenerator.save(artifacts, outputPath);
-    console.log(`💾 Artifacts saved to: ${outputPath}\n`);
+    console.log(`Artifacts saved to: ${outputPath}\n`);
 
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('Error:', error);
     process.exit(1);
   }
 }

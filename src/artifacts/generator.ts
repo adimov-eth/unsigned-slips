@@ -42,7 +42,7 @@ export interface PdfArtifacts {
   // Metadata
   metadata: MetadataArtifacts;
 
-  // Decoded text (human readable)
+  // Text decoded from content streams via CMaps (glyph escapes left as [xxxx])
   streamText: string[];
 
   // Text positioning (operator pattern fingerprint)

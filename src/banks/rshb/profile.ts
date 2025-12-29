@@ -1,8 +1,5 @@
 /**
- * RSHB (Rosselhozbank) Bank Profile
- *
- * Reference implementation for bank profiles.
- * Based on analysis of 4+ authentic samples.
+ * RSHB profile. JasperReports + OpenPDF fingerprint from confirmed slips.
  */
 
 import type { BankProfile } from '../../types/bank-profile.js';

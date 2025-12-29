@@ -1,23 +1,18 @@
 {
-  "name": "pdf-verifier",
+  "name": "p2p-slip-verifier",
   "version": "1.0.0",
-  "description": "PDF authenticity verification system for bank documents",
-  "module": "src/index.ts",
+  "description": "Working P2P bank-slip verifier. Proves an unsigned slip can be forged undetectably.",
   "scripts": {
     "extract": "bun run src/cli/extract.ts",
     "compare": "bun run src/cli/compare.ts",
-    "baseline": "bun run src/cli/baseline.ts",
     "verify": "bun run src/cli/verify.ts",
     "test": "bun test"
   },
-  "keywords": ["pdf", "verification", "forensics"],
+  "keywords": ["pdf", "verification"],
   "license": "MIT",
   "type": "module",
+  "private": true,
   "devDependencies": {
     "@types/bun": "latest"
-  },
-  "private": true,
-  "dependencies": {
-    "jsqr": "^1.4.0"
   }
 }

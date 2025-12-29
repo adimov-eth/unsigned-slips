@@ -125,10 +125,9 @@ async function main(): Promise<void> {
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
     const banks = getAllProfiles();
     console.log(`
-${COLORS.bold}PDF Verification Tool${COLORS.reset}
+${COLORS.bold}p2p-slip-verifier${COLORS.reset}
 
-Analyzes PDF receipts against bank baselines to detect forgeries.
-Auto-detects bank from PDF structure, or specify explicitly.
+Asks whether a PDF matches the bank generator fingerprint.
 
 ${COLORS.bold}Usage:${COLORS.reset}
   bun run verify <pdf-file> [options]
@@ -136,18 +135,18 @@ ${COLORS.bold}Usage:${COLORS.reset}
 ${COLORS.bold}Options:${COLORS.reset}
   --json          Output raw JSON report
   --verbose       Show all checks and details
-  --bank <id>     Force specific bank profile
-  --list-banks    List all supported banks
+  --bank <id>     Force a profile (rshb is the only one)
+  --list-banks    List profiles
   --help          Show this help
 
-${COLORS.bold}Supported Banks:${COLORS.reset}
+${COLORS.bold}Profile:${COLORS.reset}
 ${banks.map(b => `  ${b.id.padEnd(10)} ${b.fullName}`).join('\n')}
 
 ${COLORS.bold}Examples:${COLORS.reset}
-  bun run verify ../input/receipt.pdf
-  bun run verify ../input/receipt.pdf --verbose
-  bun run verify ../input/receipt.pdf --json > report.json
-  bun run verify ../input/receipt.pdf --bank rshb
+  bun run verify path/to/slip.pdf
+  bun run verify path/to/slip.pdf --verbose
+  bun run verify path/to/slip.pdf --json
+  bun run verify path/to/slip.pdf --bank rshb
 `);
     process.exit(0);
   }
@@ -193,7 +192,7 @@ ${COLORS.bold}Examples:${COLORS.reset}
     }
 
     if (!jsonOutput) {
-      console.log(`\n⏳ Analyzing: ${pdfPath}`);
+      console.log(`\nAnalyzing: ${pdfPath}`);
     }
 
     // Generate artifacts
