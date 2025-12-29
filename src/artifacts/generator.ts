@@ -11,6 +11,15 @@ import { CMapParser, type CMapAnalysis } from '../extractors/cmap-parser.js';
 import { ContentStreamParser, analyzeTextOperators, type TextOperatorAnalysis } from '../extractors/content-stream.js';
 import type { ParsedPdf, PdfStream, PdfDictionary, ToUnicodeCMap, CompressionAnalysis, PdfValue } from '../types/pdf.js';
 
+export interface PositioningArtifacts {
+  tmCount: number;           // Absolute positioning operations
+  tdCount: number;           // Relative positioning operations
+  maxTdPrecision: number;    // Max decimal places in Td values
+  avgTdPrecision: number;    // Avg decimal places in Td values
+  tmXValues: number[];       // X coordinates from Tm operations
+  tmYValues: number[];       // Y coordinates from Tm operations
+}
+
 export interface PdfArtifacts {
   // Identification
   filePath: string;
@@ -35,6 +44,9 @@ export interface PdfArtifacts {
 
   // Decoded text (human readable)
   streamText: string[];
+
+  // Text positioning (operator pattern fingerprint)
+  positioning?: PositioningArtifacts;
 }
 
 export interface StructureArtifacts {
@@ -147,6 +159,7 @@ export class ArtifactGenerator {
     const text = this.extractText(pdf);
     const metadata = this.extractMetadata(pdf);
     const streamText = this.decodeAllText(pdf, fonts.cmaps);
+    const positioning = this.extractPositioning(pdf);
 
     return {
       filePath,
@@ -159,6 +172,7 @@ export class ArtifactGenerator {
       text,
       metadata,
       streamText,
+      positioning,
     };
   }
 
@@ -501,6 +515,59 @@ export class ArtifactGenerator {
     }
 
     return metadata;
+  }
+
+  /**
+   * Extract text positioning artifacts
+   */
+  private static extractPositioning(pdf: ParsedPdf): PositioningArtifacts | undefined {
+    // Find content streams and analyze positioning operators
+    for (const [key, obj] of pdf.objects) {
+      if ('type' in obj && obj.type === 'stream') {
+        const stream = obj as PdfStream;
+
+        try {
+          const decoded = StreamDecoder.decode(stream);
+          const text = new TextDecoder('latin1').decode(decoded.data);
+
+          if (text.includes('BT') && (text.includes('Tj') || text.includes('TJ'))) {
+            // Extract Tm operations (absolute positioning)
+            const tmMatches = [...text.matchAll(/(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+Tm/g)];
+
+            // Extract Td operations (relative positioning)
+            const tdMatches = [...text.matchAll(/(-?[\d.]+)\s+(-?[\d.]+)\s+Td/g)];
+
+            // Analyze Td precision
+            const tdPrecisions: number[] = [];
+            for (const td of tdMatches) {
+              const x = td[1];
+              const y = td[2];
+              const xDec = x.includes('.') ? x.split('.')[1].replace(/0+$/, '').length : 0;
+              const yDec = y.includes('.') ? y.split('.')[1].replace(/0+$/, '').length : 0;
+              tdPrecisions.push(Math.max(xDec, yDec));
+            }
+
+            const tmXValues = tmMatches.map(m => parseFloat(m[5]));
+            const tmYValues = tmMatches.map(m => parseFloat(m[6]));
+
+            return {
+              tmCount: tmMatches.length,
+              tdCount: tdMatches.length,
+              maxTdPrecision: tdPrecisions.length > 0 ? Math.max(...tdPrecisions) : 0,
+              avgTdPrecision: tdPrecisions.length > 0
+                ? tdPrecisions.reduce((a, b) => a + b, 0) / tdPrecisions.length
+                : 0,
+              tmXValues,
+              tmYValues,
+            };
+          }
+        } catch {
+          // Not a content stream or decoding failed
+        }
+      }
+    }
+
+    return undefined;
   }
 
   /**

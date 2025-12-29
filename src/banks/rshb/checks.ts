@@ -220,6 +220,104 @@ function checkPartialDigitCoverage(artifacts: PdfArtifacts): DetectionResult {
 }
 
 /**
+ * Check positioning operator pattern
+ *
+ * RSHB's JasperReports generator has a distinctive pattern:
+ * - Many Tm (absolute positioning) operations (~29)
+ * - Few Td (relative positioning) operations (~9)
+ * - Integer precision in Td values (0 decimal places)
+ *
+ * Fake documents created with other tools show different patterns:
+ * - Per-glyph positioning: Many Td operations (100+), high decimal precision (4-6)
+ *
+ * This is a generator fingerprint that's hard to fake without
+ * understanding the exact positioning algorithm.
+ */
+function checkPositioningPattern(artifacts: PdfArtifacts): DetectionResult {
+  // Get positioning data from artifacts
+  const positioning = artifacts.positioning;
+
+  if (!positioning) {
+    return {
+      passed: true,
+      ruleId: 'RSHB_POSITIONING_PATTERN',
+      ruleName: 'RSHB Positioning Pattern',
+      severity: 'info',
+      message: 'No positioning data available for analysis',
+    };
+  }
+
+  // RSHB pattern: Tm-heavy, Td-light, integer precision
+  const expectedTmRange = [25, 35];
+  const expectedTdRange = [5, 15];
+  const expectedMaxPrecision = 0;
+
+  const issues: string[] = [];
+
+  if (positioning.tmCount < expectedTmRange[0] || positioning.tmCount > expectedTmRange[1]) {
+    issues.push(`Tm operation count ${positioning.tmCount} outside expected range [${expectedTmRange.join('-')}]`);
+  }
+
+  if (positioning.tdCount < expectedTdRange[0] || positioning.tdCount > expectedTdRange[1]) {
+    issues.push(`Td operation count ${positioning.tdCount} outside expected range [${expectedTdRange.join('-')}]`);
+  }
+
+  if (positioning.maxTdPrecision > expectedMaxPrecision) {
+    issues.push(`Td decimal precision ${positioning.maxTdPrecision} higher than expected ${expectedMaxPrecision}`);
+  }
+
+  // Per-glyph positioning is a strong indicator of different generator
+  if (positioning.tdCount > 50 && positioning.maxTdPrecision >= 4) {
+    return {
+      passed: false,
+      ruleId: 'RSHB_POSITIONING_PATTERN',
+      ruleName: 'RSHB Positioning Pattern',
+      severity: 'critical',
+      message: 'Document uses per-glyph positioning pattern inconsistent with RSHB generator',
+      details: {
+        tmCount: positioning.tmCount,
+        tdCount: positioning.tdCount,
+        maxTdPrecision: positioning.maxTdPrecision,
+        pattern: 'per-glyph',
+        expectedPattern: 'jasper-like (Tm-heavy, integer precision)',
+        explanation: 'RSHB uses JasperReports which positions text with absolute Tm operations. ' +
+          'This document uses per-glyph Td operations with high decimal precision, ' +
+          'indicating it was created with a different PDF generator.',
+      },
+    };
+  }
+
+  if (issues.length > 0) {
+    return {
+      passed: false,
+      ruleId: 'RSHB_POSITIONING_PATTERN',
+      ruleName: 'RSHB Positioning Pattern',
+      severity: 'medium',
+      message: 'Positioning pattern has anomalies',
+      details: {
+        issues,
+        tmCount: positioning.tmCount,
+        tdCount: positioning.tdCount,
+        maxTdPrecision: positioning.maxTdPrecision,
+      },
+    };
+  }
+
+  return {
+    passed: true,
+    ruleId: 'RSHB_POSITIONING_PATTERN',
+    ruleName: 'RSHB Positioning Pattern',
+    severity: 'info',
+    message: 'Positioning pattern matches RSHB generator fingerprint',
+    details: {
+      tmCount: positioning.tmCount,
+      tdCount: positioning.tdCount,
+      maxTdPrecision: positioning.maxTdPrecision,
+    },
+  };
+}
+
+/**
  * All RSHB custom checks
  */
 export const rshbCustomChecks: CustomCheck[] = [
@@ -243,5 +341,12 @@ export const rshbCustomChecks: CustomCheck[] = [
     severity: 'high',
     description: 'Checks for unused digit mappings that indicate template reuse',
     check: checkPartialDigitCoverage,
+  },
+  {
+    id: 'RSHB_POSITIONING_PATTERN',
+    name: 'RSHB Positioning Pattern',
+    severity: 'critical',
+    description: 'Checks text positioning operator pattern matches JasperReports fingerprint',
+    check: checkPositioningPattern,
   },
 ];
